@@ -1,0 +1,15 @@
+**pycache**/
+*.pyc
+db.sqlite3
+.env
+venv/
+env/
+media/
+staticfiles/
+static/
+.vscode/
+# Media / Downloads
+media/downloads/
+
+# Virtual environment
+venv/
