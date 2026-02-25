@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Extraction Engine - Analyze Video</title>
+</head>
+<body>
+    <h1>Media Extraction Engine</h1>
+    <h3>Paste the video URL to analyze platform</h3>
+
+    <form method="POST" id="analyzeForm">
+        {% csrf_token %}
+        <input type="text" name="video_url" placeholder="Paste video URL here" style="width:400px" required>
+        <button type="submit">Analyze</button>
+    </form>
+
+    {% if result %}
+        <h4>Analysis Result:</h4>
+        {% if result.is_valid %}
+            <p><strong>URL:</strong> {{ video_url }}</p>
+            <p><strong>Platform Detected:</strong> {{ result.platform|title }}</p>
+            <p style="color:green">{{ result.message }}</p>
+
+            <!-- Redirect to quality selection page after 1 second -->
+            <script>
+                setTimeout(function() {
+                    window.location.href = "{% url 'quality-selection' %}";
+                }, 1000); // 1 second delay to show the message
+            </script>
+
+        {% else %}
+            <p style="color:red">{{ result.message }}</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

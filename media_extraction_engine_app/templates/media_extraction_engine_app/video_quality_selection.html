@@ -1,0 +1,21 @@
+<h1>Video Quality Selection</h1>
+
+<p><strong>Video URL:</strong> {{ video.url }}</p>
+<p><strong>Platform:</strong> {{ video.platform|title }}</p>
+
+{% if video.metadata.error %}
+    <p style="color:red">Error fetching video info: {{ video.metadata.error }}</p>
+{% else %}
+    <p><strong>Title:</strong> {{ video.metadata.title }}</p>
+    <p><strong>Duration:</strong> {{ video.metadata.duration }} seconds</p>
+    <img src="{{ video.metadata.thumbnail }}" alt="Thumbnail" width="320">
+
+    <h3>Available Formats:</h3>
+    <ul>
+        {% for f in video.metadata.formats %}
+            <li>
+                {{ f.resolution }} {{ f.ext }} {% if f.note %} ({{ f.note }}) {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
