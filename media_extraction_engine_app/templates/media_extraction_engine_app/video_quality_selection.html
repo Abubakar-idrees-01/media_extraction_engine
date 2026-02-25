@@ -1,21 +1,34 @@
-<h1>Video Quality Selection</h1>
+<!-- media_extraction_engine_app/templates/media_extraction_engine_app/video_quality_selection.html -->
 
-<p><strong>Video URL:</strong> {{ video.url }}</p>
-<p><strong>Platform:</strong> {{ video.platform|title }}</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Extraction Engine - Select Quality</title>
+</head>
+<body>
+    <h1>Video Quality Selection</h1>
 
-{% if video.metadata.error %}
-    <p style="color:red">Error fetching video info: {{ video.metadata.error }}</p>
-{% else %}
-    <p><strong>Title:</strong> {{ video.metadata.title }}</p>
-    <p><strong>Duration:</strong> {{ video.metadata.duration }} seconds</p>
-    <img src="{{ video.metadata.thumbnail }}" alt="Thumbnail" width="320">
+    <p><strong>Video URL:</strong> {{ video.url }}</p>
+    <p><strong>Platform:</strong> {{ video.platform|title }}</p>
 
-    <h3>Available Formats:</h3>
-    <ul>
-        {% for f in video.metadata.formats %}
-            <li>
-                {{ f.resolution }} {{ f.ext }} {% if f.note %} ({{ f.note }}) {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+    {% if video.metadata.error %}
+        <p style="color:red">Error fetching video info: {{ video.metadata.error }}</p>
+    {% else %}
+        <p><strong>Title:</strong> {{ video.metadata.title }}</p>
+        <p><strong>Duration:</strong> {{ video.metadata.duration }} seconds</p>
+        <img src="{{ video.metadata.thumbnail }}" alt="Thumbnail" width="320">
+
+        <h3>Available Formats:</h3>
+        <ul>
+            {% for f in video.metadata.formats %}
+                <li>
+                    {{ f.resolution }} {{ f.ext }} {% if f.note %} ({{ f.note }}) {% endif %}
+                    <form method="get" action="{% url 'download-video' f.format_id %}" style="display:inline">
+                        <button type="submit">Download</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

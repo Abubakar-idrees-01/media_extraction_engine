@@ -20,12 +20,6 @@
             <p><strong>Platform Detected:</strong> {{ result.platform|title }}</p>
             <p style="color:green">{{ result.message }}</p>
 
-            <!-- Redirect to quality selection page after 1 second -->
-            <script>
-                setTimeout(function() {
-                    window.location.href = "{% url 'quality-selection' %}";
-                }, 1000); // 1 second delay to show the message
-            </script>
 
         {% else %}
             <p style="color:red">{{ result.message }}</p>
