@@ -61,6 +61,14 @@ def quality_selection_redirect_view(request):
 # ------------------------------
 # Step 3: Download Selected Video
 # ------------------------------
+import os
+import yt_dlp
+import uuid
+import shutil
+import threading
+from django.shortcuts import redirect
+from django.http import FileResponse, HttpResponse
+
 def download_selected_video_view(request, format_id):
     video = request.session.get("current_video")
     if not video:
@@ -68,33 +76,44 @@ def download_selected_video_view(request, format_id):
 
     url = video["url"]
 
-    # Use a temporary folder to store downloads
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        output_template = os.path.join(tmpdirname, "%(title)s.%(ext)s")
+    # Create unique temporary folder
+    base_download = os.path.join(os.path.dirname(os.path.dirname(__file__)), "media", "downloads")
+    os.makedirs(base_download, exist_ok=True)
+    tmp_dir = os.path.join(base_download, str(uuid.uuid4()))
+    os.makedirs(tmp_dir, exist_ok=True)
 
-        # Sanitize filenames to remove problematic characters
-        def sanitize_filename(d):
-            if "title" in d:
-                d["title"] = re.sub(r'[\\/*?:"<>|]', "_", d["title"])
-            return d
+    output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
 
-        ydl_opts = {
-            "format": format_id,
-            "outtmpl": output_template,
-            "quiet": True,
-            "progress_hooks": [],
-            "postprocessors_hooks": [],
-        }
+    ydl_opts = {
+    "format": format_id,
+    "outtmpl": output_template,
+    "quiet": True,
+    "merge_output_format": "mp4",  # Merge video + audio into one MP4
+}
 
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                info = sanitize_filename(info)
-                filename = ydl.prepare_filename(info)
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
 
-            # Serve file to browser
-            return FileResponse(open(filename, "rb"), as_attachment=True)
+            # Get the actual downloaded file path
+            if "requested_downloads" in info and len(info["requested_downloads"]) > 0:
+                downloaded_file = info["requested_downloads"][0]["filepath"]
+            else:
+                # fallback
+                downloaded_file = ydl.prepare_filename(info)
 
-        except Exception as e:
-            logger.exception(f"Download failed for {url} with format {format_id}")
-            return HttpResponse(f"Download failed: {str(e)}", status=500)
+        # Serve the file
+        response = FileResponse(open(downloaded_file, "rb"), as_attachment=True)
+
+        # Schedule deletion of folder after 10 seconds
+        def delete_later(path):
+            import time
+            time.sleep(10)
+            shutil.rmtree(path, ignore_errors=True)
+
+        threading.Thread(target=delete_later, args=(tmp_dir,), daemon=True).start()
+
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Download failed: {str(e)}", status=500)

@@ -1,29 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Media Extraction Engine - Analyze Video</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Extraction Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body>
-    <h1>Media Extraction Engine</h1>
-    <h3>Paste the video URL to analyze platform</h3>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-6">
 
-    <form method="POST" id="analyzeForm">
-        {% csrf_token %}
-        <input type="text" name="video_url" placeholder="Paste video URL here" style="width:400px" required>
-        <button type="submit">Analyze</button>
-    </form>
+    <div class="max-w-2xl w-full">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                Media Extraction Engine
+            </h1>
+            <p class="text-slate-400">Analyze video URLs and identify platforms instantly.</p>
+        </div>
 
-    {% if result %}
-        <h4>Analysis Result:</h4>
-        {% if result.is_valid %}
-            <p><strong>URL:</strong> {{ video_url }}</p>
-            <p><strong>Platform Detected:</strong> {{ result.platform|title }}</p>
-            <p style="color:green">{{ result.message }}</p>
+        <div class="glass border border-slate-800 rounded-2xl p-8 shadow-2xl">
+            <form method="POST" id="analyzeForm" class="space-y-4">
+                {% csrf_token %}
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        name="video_url" 
+                        placeholder="Paste YouTube, Vimeo, or TikTok URL here..." 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 px-5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-600 text-slate-200"
+                        required
+                    >
+                </div>
+                
+                <button 
+                    type="submit" 
+                    id="submitBtn"
+                    class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                    <span id="btnText">Analyze Video</span>
+                    <div id="loader" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </button>
+            </form>
 
+            {% if result %}
+                <div class="mt-10 pt-8 border-t border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">Analysis Result</h4>
+                    
+                    {% if result.is_valid %}
+                        <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
+                            <div class="flex flex-col gap-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400 text-sm">Platform</span>
+                                    <span class="px-3 py-1 bg-emerald-500 text-emerald-950 text-xs font-bold rounded-full uppercase tracking-tighter">
+                                        {{ result.platform }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 text-sm block mb-1">Source URL</span>
+                                    <p class="text-sm font-mono truncate text-blue-300 bg-slate-900/50 p-2 rounded">
+                                        {{ video_url }}
+                                    </p>
+                                </div>
+                                <p class="text-emerald-400 text-sm mt-2 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    {{ result.message }}
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-5 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <p class="text-red-400 text-sm">{{ result.message }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <footer class="mt-8 text-center text-slate-600 text-xs">
+            &copy; 2026 Media Extraction Engine • Powered by Django
+        </footer>
+    </div>
 
-        {% else %}
-            <p style="color:red">{{ result.message }}</p>
-        {% endif %}
-    {% endif %}
+    <script>
+        // Simple UI handling for the submit button
+        const form = document.getElementById('analyzeForm');
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loader = document.getElementById('loader');
+
+        form.addEventListener('submit', () => {
+            btnText.textContent = 'Processing...';
+            loader.classList.remove('hidden');
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        });
+    </script>
 </body>
 </html>
