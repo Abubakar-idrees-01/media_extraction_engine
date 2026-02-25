@@ -84,12 +84,14 @@ def download_selected_video_view(request, format_id):
 
     output_template = os.path.join(tmp_dir, "%(title)s.%(ext)s")
 
+    # Change your ydl_opts to this:
     ydl_opts = {
-    "format": format_id,
-    "outtmpl": output_template,
-    "quiet": True,
-    "merge_output_format": "mp4",  # Merge video + audio into one MP4
-}
+        # 'best' tells yt-dlp to pick a single file that has BOTH video and audio
+        # instead of picking the best video and best audio separately.
+        "format": "best", 
+        "outtmpl": output_template,
+        "quiet": True,
+    }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
